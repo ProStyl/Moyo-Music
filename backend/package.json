@@ -4,7 +4,7 @@
   "description": "Backend API pour la plateforme de distribution musicale, billetterie et art au Congo-Brazzaville",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && xcopy /E /I /Y src\\database\\schema.sql dist\\database\\schema.sql",
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "db:init": "ts-node src/database/initDb.ts"
@@ -13,7 +13,10 @@
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "dotenv-expand": "^1000.0.0",
     "express": "^4.19.2",
+    "express-rate-limit": "^8.7.0",
+    "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "pg": "^8.12.0",

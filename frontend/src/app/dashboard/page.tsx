@@ -3,32 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { 
-  Music, 
-  Radio, 
-  ShieldCheck, 
-  Wallet, 
-  Ticket, 
-  PlusCircle, 
-  Palette, 
-  Globe,
-  Sparkles, 
-  TrendingUp, 
-  Award, 
-  ArrowRight, 
-  Users, 
-  CheckCircle2, 
-  Clock, 
-  Calendar,
-  AlertCircle,
-  Building2,
-  Tv,
-  Coins,
-  Send,
-  Eye,
-  FileText,
-  Zap
-} from "lucide-react";
+import { Music, Radio, ShieldCheck, Ticket, PlusCircle, Globe, Sparkles, ArrowRight, FileText, Zap } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { monitoringApi, bcdaApi, ticketingApi, marketplaceApi, publishingApi, walletApi } from "@/lib/api";
 
@@ -71,7 +46,7 @@ export default function UnifiedWorkspaceDashboard() {
       } else if (user?.role === "painter") {
         const res = await marketplaceApi.getMyArtworks().catch(() => ({ artworks: [] }));
         setArtworks(res.artworks || []);
-      } else if (user?.role === "bcda_agent") {
+      } else if ((user?.role as "artist" | "organizer" | "painter" | "fan" | "admin" | "bcda_agent") === "bcda_agent") {
         const [stData, feed] = await Promise.all([
           bcdaApi.getStats().catch(() => null),
           monitoringApi.getLiveFeed().catch(() => ({ detections: [] })),
@@ -106,7 +81,7 @@ export default function UnifiedWorkspaceDashboard() {
         phone_number: withdrawPhone,
         operator: withdrawOperator
       });
-      setWithdrawNotification(`✅ Retrait de ${amt.toLocaleString('fr-FR')} FCFA initié avec succès vers ${withdrawPhone} (${withdrawOperator}) !`);
+      setWithdrawNotification(`✅ Retrait de ${amt.toLocaleString("fr-FR")} FCFA initié avec succès vers ${withdrawPhone} (${withdrawOperator}) !`);
       setIsWithdrawModalOpen(false);
       setWithdrawAmount("");
       loadAllData();
@@ -154,7 +129,7 @@ export default function UnifiedWorkspaceDashboard() {
           <div>
             <span className="text-[10px] text-slate-400 uppercase font-mono block">Solde Disponible MoMo</span>
             <strong className="text-xl sm:text-2xl font-black text-white">
-              {(walletSummary?.balance_fcfa || user.wallet_balance_fcfa || 0).toLocaleString('fr-FR')} <span className="text-congo-yellow text-sm">FCFA</span>
+              {(walletSummary?.balance_fcfa || user.wallet_balance_fcfa || 0).toLocaleString("fr-FR")} <span className="text-congo-yellow text-sm">FCFA</span>
             </strong>
           </div>
           <button
@@ -166,15 +141,15 @@ export default function UnifiedWorkspaceDashboard() {
         </div>
       </div>
 
-      {withdrawNotification && (
+      {withdrawNotification && 
         <div className="p-4 bg-emerald-950/80 border border-emerald-500 rounded-2xl text-emerald-200 text-xs flex items-center justify-between shadow-2xl">
           <span>{withdrawNotification}</span>
           <button onClick={() => setWithdrawNotification(null)} className="text-emerald-400 hover:text-white">✕</button>
         </div>
-      )}
+      }
 
       {/* 2. LES 4 GRANDS PILIERS DE L'ARTISTE (CLARIFIÉS & NON REDONDANTS) */}
-      {(role === "artist" || role === "admin") && (
+      {(role === "artist" || role === "admin") && 
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-black text-white flex items-center space-x-2">
@@ -296,9 +271,166 @@ export default function UnifiedWorkspaceDashboard() {
 
           </div>
         </div>
-      )}
+      }
 
-      {/* 3. VUE RÉCAPITULATIVE DES PERFORMANCES & ACTIONS RAPIDES */}
+      {/* ESPACE ORGANISATEUR : mes événements & billetterie */}
+      {role === "organizer" && 
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-black text-white flex items-center space-x-2">
+              <Ticket className="w-5 h-5 text-congo-red" />
+              <span>Mes Événements & Billetterie</span>
+            </h2>
+            <Link href="/billetterie/mes-evenements" className="text-xs text-congo-red hover:underline">
+              Voir tous mes événements →
+            </Link>
+          </div>
+
+          {events.length === 0 ? (
+            <div className="p-8 bg-slate-900 border border-slate-800 rounded-3xl text-center space-y-3">
+              <p className="text-xs text-slate-400">Vous n'avez pas encore créé d'événement.</p>
+              <Link
+                href="/billetterie/creer"
+                className="inline-flex items-center space-x-2 px-5 py-2.5 bg-congo-red hover:bg-rose-600 text-white font-bold rounded-xl text-xs transition"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>Créer mon premier événement</span>
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {events.slice(0, 6).map((evt: any) => (
+                <Link
+                  key={evt.id}
+                  href="/billetterie/mes-evenements"
+                  className="p-5 bg-slate-900 border border-slate-800 hover:border-congo-red/50 rounded-3xl space-y-2 transition shadow-xl"
+                >
+                  <strong className="text-sm font-bold text-white block">{evt.title}</strong>
+                  <p className="text-[11px] text-slate-400">
+                    {evt.event_date ? new Date(evt.event_date).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "Date à confirmer"}
+                  </p>
+                  <div className="pt-2 border-t border-slate-800/80 text-xs text-congo-yellow font-semibold">
+                    {evt.tickets_sold || 0} / {evt.total_capacity || "—"} billets vendus
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      }
+
+      {/* ESPACE PEINTRE : mes œuvres en galerie */}
+      {role === "painter" && 
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-black text-white flex items-center space-x-2">
+              <Sparkles className="w-5 h-5 text-congo-yellow" />
+              <span>Mes Œuvres en Galerie</span>
+            </h2>
+            <Link href="/galerie" className="text-xs text-congo-yellow hover:underline">
+              Voir toute la galerie →
+            </Link>
+          </div>
+
+          {artworks.length === 0 ? (
+            <div className="p-8 bg-slate-900 border border-slate-800 rounded-3xl text-center space-y-3">
+              <p className="text-xs text-slate-400">Vous n'avez pas encore ajouté d'œuvre.</p>
+              <Link
+                href="/galerie/ajouter"
+                className="inline-flex items-center space-x-2 px-5 py-2.5 bg-congo-yellow hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>Ajouter ma première œuvre</span>
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {artworks.slice(0, 8).map((art: any) => (
+                <Link
+                  key={art.id}
+                  href="/galerie"
+                  className="bg-slate-900 border border-slate-800 hover:border-congo-yellow/50 rounded-3xl overflow-hidden transition shadow-xl"
+                >
+                  {art.image_url && (
+                    <img src={art.image_url} alt={art.title} className="w-full h-32 object-cover" />
+                  )}
+                  <div className="p-4 space-y-1">
+                    <strong className="text-xs font-bold text-white block truncate">{art.title}</strong>
+                    <span className="text-[11px] text-congo-yellow font-semibold">
+                      {(art.price_fcfa || 0).toLocaleString("fr-FR")} FCFA
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      }
+
+      {/* ESPACE AGENT BCDA : collecte & détections en direct */}
+      {role === "bcda_agent" && 
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-black text-white flex items-center space-x-2">
+              <ShieldCheck className="w-5 h-5 text-congo-yellow" />
+              <span>Collecte BCDA & Détections en Direct</span>
+            </h2>
+            <Link href="/monitoring" className="text-xs text-congo-yellow hover:underline">
+              Voir le monitoring complet →
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl">
+              <span className="text-[10px] text-slate-400 block">Œuvres Enregistrées</span>
+              <strong className="text-xl font-black text-white">{bcdaStats?.total_works_registered ?? "—"}</strong>
+            </div>
+            <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl">
+              <span className="text-[10px] text-slate-400 block">Établissements Licenciés</span>
+              <strong className="text-xl font-black text-white">{bcdaStats?.total_licensed_venues ?? "—"}</strong>
+            </div>
+            <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl">
+              <span className="text-[10px] text-slate-400 block">Collecté au Total</span>
+              <strong className="text-xl font-black text-congo-yellow">
+                {(bcdaStats?.total_collected_fcfa || 0).toLocaleString("fr-FR")} FCFA
+              </strong>
+            </div>
+            <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl">
+              <span className="text-[10px] text-slate-400 block">Reversé aux Artistes</span>
+              <strong className="text-xl font-black text-emerald-400">
+                {(bcdaStats?.total_paid_out_to_artists_fcfa || 0).toLocaleString("fr-FR")} FCFA
+              </strong>
+            </div>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden">
+            <div className="p-4 border-b border-slate-800">
+              <h3 className="text-xs font-bold text-white">Dernières Détections Radio/TV</h3>
+            </div>
+            {recentDetections.length === 0 ? (
+              <p className="p-5 text-xs text-slate-400">Aucune détection récente.</p>
+            ) : (
+              <div className="divide-y divide-slate-800/80">
+                {recentDetections.slice(0, 8).map((det: any) => (
+                  <div key={det.id} className="p-4 flex items-center justify-between text-xs">
+                    <div>
+                      <strong className="text-white">{det.track_title}</strong>
+                      <span className="text-slate-400"> — {det.artist_name}</span>
+                      <p className="text-[10px] text-slate-500">{det.station_name} ({det.station_city})</p>
+                    </div>
+                    <span className="text-[10px] text-slate-500 font-mono">
+                      {det.detected_at ? new Date(det.detected_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) : ""}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      }
+
+      {/* 3. VUE RÉCAPITULATIVE DES PERFORMANCES & ACTIONS RAPIDES (réservée aux artistes) */}
+      {(role === "artist" || role === "admin") && 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Colonne Gauche : Raccourcis d'actions Pro */}
@@ -385,14 +517,14 @@ export default function UnifiedWorkspaceDashboard() {
             <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800">
               <span className="text-slate-500 block text-[10px]">Droits d'Auteur BCDA</span>
               <strong className="text-lg font-black text-congo-yellow">
-                {(artistStats?.estimated_royalties_fcfa || 45000).toLocaleString('fr-FR')} FCFA
+                {(artistStats?.estimated_royalties_fcfa || 45000).toLocaleString("fr-FR")} FCFA
               </strong>
             </div>
 
             <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800">
               <span className="text-slate-500 block text-[10px]">Droits Publishing (360°)</span>
               <strong className="text-lg font-black text-emerald-400">
-                {(pubStats?.grand_total_fcfa || 125000).toLocaleString('fr-FR')} FCFA
+                {(pubStats?.grand_total_fcfa || 125000).toLocaleString("fr-FR")} FCFA
               </strong>
             </div>
           </div>
@@ -409,9 +541,10 @@ export default function UnifiedWorkspaceDashboard() {
         </div>
 
       </div>
+      }
 
       {/* MODAL RETRAIT MOBILE MONEY */}
-      {isWithdrawModalOpen && (
+      {isWithdrawModalOpen && 
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-6 shadow-2xl text-white">
             <div className="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -489,7 +622,7 @@ export default function UnifiedWorkspaceDashboard() {
             </form>
           </div>
         </div>
-      )}
+      }
 
     </div>
   );

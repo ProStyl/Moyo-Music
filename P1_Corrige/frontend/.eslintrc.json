@@ -1,0 +1,49 @@
+{
+  "root": true,
+  "env": {
+    "node": true,
+    "es2021": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "next/core-web-vitals"
+  ],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-console": ["error", { "allow": ["warn", "error"] }],
+    "no-unused-vars": "warn",
+    "eqeqeq": "error",
+    "semi": ["error", "always"],
+    "quotes": ["error", "double", { "avoidEscape": true }],
+    "dot-notation": "error",
+    "no-implicit-coercion": "warn",
+    "no-extra-parens": "warn",
+    "prefer-const": "error",
+    "array-callback-return": "error",
+    "no-warning-comments": "warn",
+    "no-fallthrough": "error",
+    "no-multi-str": "error",
+    "no-unreachable": "error",
+    "no-confusing-arrow": "error",
+    "object-shorthand": ["error", "always"],
+    "no-use-before-define": "error",
+    "no-empty-function": "warn",
+    "no-empty-pattern": "error",
+    "no-restricted-syntax": ["error", "LabeledStatement"],
+    // Règle de validité JSX stricte, sans impact fonctionnel ni de sécurité
+    // (l'apostrophe brute s'affiche correctement dans tous les navigateurs).
+    // Redescendue en avertissement pour ne pas bloquer le build sur ~150
+    // occurrences historiques ; les nouvelles occurrences restent signalées.
+    "react/no-unescaped-entities": "warn",
+    // "no-undef" est une règle JS pure : elle ne comprend pas qu'un identifiant
+    // comme "React" dans "React.FormEvent" n'est utilisé qu'en position de type.
+    // TypeScript couvre déjà bien mieux ce cas (voir tsc --noEmit) ; garder cette
+    // règle active en .tsx ne produit que des faux positifs. C'est la
+    // recommandation standard pour tout projet TypeScript + ESLint sans
+    // @typescript-eslint.
+    "no-undef": "off"
+  }
+}

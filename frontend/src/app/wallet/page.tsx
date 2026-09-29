@@ -85,7 +85,7 @@ export default function WalletPage() {
       const res = await walletApi.withdraw({
         amount_fcfa: amount,
         phone_number: withdrawPhone || user?.phone_number || "+242060000000",
-        operator: operator,
+        operator,
       });
 
       setSuccessMessage(res.message);
@@ -197,9 +197,9 @@ export default function WalletPage() {
             <span className="text-[11px] text-slate-500 font-mono">PostgreSQL Ledger</span>
           </div>
 
-          {transactions.length > 0 ? (
+          {transactions.length > 0 ? 
             <div className="divide-y divide-slate-800/60 max-h-80 overflow-y-auto">
-              {transactions.map((tx, idx) => (
+              {transactions.map((tx, idx) => 
                 <div key={idx} className="py-3 flex justify-between items-center text-xs">
                   <div className="flex items-center space-x-3">
                     <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
@@ -219,13 +219,13 @@ export default function WalletPage() {
                     {tx.type === "PAYOUT" || tx.type === "WITHDRAWAL" ? "-" : "+"}{parseFloat(tx.amount_fcfa || 0).toLocaleString()} FCFA
                   </strong>
                 </div>
-              ))}
+              )}
             </div>
-          ) : (
+           : 
             <div className="py-12 text-center text-slate-500 text-xs">
               Aucune transaction récente enregistrée sur votre compte.
             </div>
-          )}
+          }
         </div>
 
       </div>
@@ -233,7 +233,7 @@ export default function WalletPage() {
       {/* ========================================================================= */}
       {/* 3. MODALE / TUNNEL DE RETRAIT ÉTAPE PAR ÉTAPE */}
       {/* ========================================================================= */}
-      {isWithdrawOpen && (
+      {isWithdrawOpen && 
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative animate-fade-in">
             <button
@@ -244,7 +244,7 @@ export default function WalletPage() {
             </button>
 
             {/* ÉTAPE 1 : CHOIX DE L'OPÉRATEUR */}
-            {withdrawStep === 1 && (
+            {withdrawStep === 1 && 
               <div className="space-y-6">
                 <div>
                   <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-congo-yellow/10 text-congo-yellow text-[10px] font-bold uppercase mb-2">
@@ -297,10 +297,10 @@ export default function WalletPage() {
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
-            )}
+            }
 
             {/* ÉTAPE 2 : NUMÉRO & MONTANT */}
-            {withdrawStep === 2 && (
+            {withdrawStep === 2 && 
               <div className="space-y-5">
                 <div>
                   <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-congo-yellow/10 text-congo-yellow text-[10px] font-bold uppercase mb-2">
@@ -342,7 +342,7 @@ export default function WalletPage() {
 
                   {/* Boutons Rapides */}
                   <div className="flex gap-2">
-                    {[10000, 25000, 50000, balance].map((val, idx) => (
+                    {[10000, 25000, 50000, balance].map((val, idx) => 
                       <button
                         key={idx}
                         type="button"
@@ -351,15 +351,15 @@ export default function WalletPage() {
                       >
                         {val === balance ? "Tout retirer" : `${val / 1000}k`}
                       </button>
-                    ))}
+                    )}
                   </div>
                 </div>
 
-                {errorMessage && (
+                {errorMessage && 
                   <div className="p-3 bg-red-950/60 border border-red-800 text-red-300 rounded-xl text-xs">
                     {errorMessage}
                   </div>
-                )}
+                }
 
                 <div className="flex gap-3 pt-2">
                   <button
@@ -375,18 +375,18 @@ export default function WalletPage() {
                     onClick={handleWithdrawSubmit}
                     className="flex-1 py-3 bg-congo-green hover:bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-xl transition disabled:opacity-50 flex items-center justify-center space-x-2"
                   >
-                    {isProcessing ? (
+                    {isProcessing ? 
                       <span>Virement MoMo en cours...</span>
-                    ) : (
+                     : 
                       <span>Confirmer le Virement ({parseFloat(withdrawAmount || "0").toLocaleString()} FCFA) 🚀</span>
-                    )}
+                    }
                   </button>
                 </div>
               </div>
-            )}
+            }
 
             {/* ÉTAPE 3 : CONFIRMATION & REÇU */}
-            {withdrawStep === 3 && (
+            {withdrawStep === 3 && 
               <div className="text-center space-y-6 py-4">
                 <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto">
                   <CheckCircle2 className="w-8 h-8" />
@@ -418,11 +418,11 @@ export default function WalletPage() {
                   Fermer
                 </button>
               </div>
-            )}
+            }
 
           </div>
         </div>
-      )}
+      }
 
     </div>
   );

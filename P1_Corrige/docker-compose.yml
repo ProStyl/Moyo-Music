@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgis/postgis:15-3.4
+    container_name: congo-art-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: congo_art_music
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/src/database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - congo-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: congo-art-backend
+    restart: always
+    environment:
+      PORT: 4000
+      NODE_ENV: development
+      DATABASE_URL: postgres://postgres:changeme@postgres:5432/congo_art_music
+      JWT_SECRET: supersecret_congo_art_music_2026_jwt_token_key
+      CINETPAY_API_KEY: mock_cinetpay_key_cg
+      CINETPAY_SITE_ID: mock_site_id_cg
+      FRONTEND_URL: http://localhost:3001
+      KIBANGOUPAY_BASE_URL: http://host.docker.internal:3000
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - uploads_data:/app/uploads
+    depends_on:
+      - postgres
+    networks:
+      - congo-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: congo-art-frontend
+    restart: always
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api
+      WATCHPACK_POLLING: "true"
+      PORT: 3001
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - congo-network
+
+volumes:
+  postgres_data:
+  uploads_data:
+
+networks:
+  congo-network:
+    driver: bridge

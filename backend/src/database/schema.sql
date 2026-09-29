@@ -104,6 +104,7 @@ CREATE TABLE IF NOT EXISTS tickets (
     price_paid_fcfa DECIMAL(10, 2) NOT NULL,
     qr_code_hash VARCHAR(255) UNIQUE NOT NULL,
     status VARCHAR(50) DEFAULT 'VALID', -- 'VALID', 'USED', 'CANCELLED'
+    purchase_idempotency_key VARCHAR(255), -- Idempotence d'achat
     scanned_at TIMESTAMP WITH TIME ZONE,
     scanned_by UUID REFERENCES users(id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -139,8 +140,31 @@ CREATE TABLE IF NOT EXISTS transactions (
     phone_used VARCHAR(50),
     external_reference VARCHAR(255) UNIQUE, -- ID transaction CinetPay / Flutterwave
     status VARCHAR(50) DEFAULT 'PENDING', -- 'PENDING', 'SUCCESS', 'FAILED'
+    idempotency_key VARCHAR(255), -- Pour idempotence des retraits/paiements
     metadata JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 8. PARAMÈTRES & CONFIGURATION (P2)
+CREATE TABLE IF NOT EXISTS system_config (
+    key VARCHAR(100) PRIMARY KEY,
+    value JSONB DEFAULT '{}'::jsonb,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 9. ÉVÉNEMENTS & BILLETTERIE P2 (statuts de paiement progressif)
+ALTER TABLE IF EXISTS events ADD COLUMN IF NOT EXISTS tickets_reserved INT DEFAULT 0;
+ALTER TABLE IF EXISTS events ADD COLUMN IF NOT EXISTS tickets_sold INT DEFAULT 0;
+
+-- 10. Événements de webhook pour anti-rejet / anti-replay (P2)
+CREATE TABLE IF NOT EXISTS payment_webhook_events (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    transaction_id UUID REFERENCES transactions(id),
+    external_reference VARCHAR(255) NOT NULL, -- ID fournisseur (KibangouPay)
+    received_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    signature VARCHAR(255),
+    status VARCHAR(50) DEFAULT 'PENDING', -- 'PENDING', 'PROCESSED', 'REJECTED'
+    UNIQUE(external_reference)
 );
 
 -- INDEXES POUR HAUTE PERFORMANCE
